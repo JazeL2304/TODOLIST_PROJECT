@@ -34,686 +34,457 @@ if ($user_query) {
 // Ambil daftar todo list
 $result = $conn->query("SELECT * FROM todo_lists WHERE user_id = $user_id ORDER BY completed DESC, id DESC");
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        :root {
-    --primary-gradient: linear-gradient(135deg, #0099CC, #66CCFF);
-    --secondary-color: #ffffff;
-    --text-color: #333333;
-    --card-shadow: 0 8px 32px rgba(0,0,0,0.1);
-}
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TaskDo Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "error": "#ba1a1a",
+                    "secondary": "#006689",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f0f4f8",
+                    "surface-container": "#eaeef3",
+                    "on-surface": "#171c1f",
+                    "on-surface-variant": "#3e484f",
+                    "primary": "#006386",
+                    "on-primary": "#ffffff",
+                    "surface": "#f6fafe",
+                    "background": "#f6fafe",
+                    "outline": "#6e7880",
+                    "outline-variant": "#bdc8d0",
+                    "error-container": "#ffdad6",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "secondary-container": "#66ccff",
+                    "on-secondary-container": "#005573",
+                },
+                "spacing": {
+                    "lg": "40px",
+                    "xl": "64px",
+                    "xs": "4px",
+                    "base": "8px",
+                    "container-max": "1200px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "md": "24px"
+                },
+                "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "body-sm": ["Inter"],
+                    "headline-sm": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                },
+                "boxShadow": {
+                    "ambient": "0px 10px 30px rgba(0, 153, 204, 0.08)",
+                }
+            },
+        },
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+    }
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0099CC 0%, #66CCFF 100%);
+    }
+    .task-done {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+    .wave-bg {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%230099cc' fill-opacity='1' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,149.3C672,149,768,203,864,229.3C960,256,1056,256,1152,229.3C1248,203,1344,149,1392,122.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+        mask-repeat: no-repeat;
+        mask-position: top;
+        background-color: #005573;
+    }
 
-/* Keyframes Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    /* Checklist styling to match original UI logic */
+    .form-check-input {
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        width: 20px !important;
+        height: 20px !important;
+    }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
-}
-
-@keyframes logoFloat {
-    0% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-5px) rotate(2deg); }
-    50% { transform: translateY(0) rotate(0deg); }
-    75% { transform: translateY(5px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-}
-
-@keyframes profilePulse {
-    0% {
+    .form-check-input:checked {
+        background-color: #66CCFF;
         border-color: #66CCFF;
-        box-shadow: 0 0 0 0 rgba(102,204,255,0.4);
     }
-    70% {
-        border-color: #0099CC;
-        box-shadow: 0 0 0 5px rgba(102,204,255,0);
-    }
-    100% {
+
+    .form-check-input:focus {
         border-color: #66CCFF;
-        box-shadow: 0 0 0 0 rgba(102,204,255,0);
+        box-shadow: 0 0 0 0.25rem rgba(102, 204, 255, 0.25);
     }
-}
+    
+    a { text-decoration: none; }
+    
+    /* Fix Bootstrap modal z-index conflicts with Tailwind */
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1055 !important; }
+    .modal-dialog { z-index: 1056 !important; }
+    /* Notification above everything */
+    #notification-container { z-index: 9999 !important; }
 
-@keyframes buttonPop {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
-
-@keyframes moveWave1 {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(-25%); }
-    100% { transform: translateX(-50%); }
-}
-
-@keyframes moveWave2 {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(-15%); }
-    100% { transform: translateX(-30%); }
-}
-
-/* Base Styles */
-body {
-    background: var(--primary-gradient);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-}
-
-h1, h2, h3, h4, h5, .navbar-brand {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-}
-
-/* Navbar Styles */
-.navbar {
-    font-family: 'Poppins', sans-serif;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease-out;
-    padding: 0.8rem 1rem;
-}
-
-.navbar-text {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.1rem !important;
-    font-weight: 500;
-    color: #000000;
-}
-
-/* Logo Styles */
-.taskdo-logo {
-    height: 85px;
-    transition: all 0.5s ease;
-    animation: logoFloat 6s ease-in-out infinite;
-    z-index: 1000;
-    margin-top: 0;
-}
-
-.taskdo-logo:hover {
-    transform: scale(1.1) rotate(5deg);
-    filter: drop-shadow(0 0 15px rgba(102,204,255,0.6));
-}
-
-/* Profile Styles */
-.profile-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 20px;
-    transition: all 0.3s ease;
-}
-
-.profile-wrapper:hover {
-    background: rgba(102, 204, 255, 0.1);
-}
-
-.profile-img {
-    width: 35px;
-    height: 35px;
-    object-fit: cover;
-    border: 2px solid #66CCFF;
-    animation: profilePulse 3s infinite;
-    transition: transform 0.3s ease;
-}
-
-.profile-img:hover {
-    transform: scale(1.1);
-}
-
-/* Time Display */
-#currentTime {
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    color: #000000;
-    white-space: nowrap;
-}
-
-/* Main Container */
-.main-container {
-    animation: fadeIn 0.8s ease-out;
-    padding: 2rem;
-    padding-bottom: 80px;
-}
-
-/* Card Styles */
-.todo-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    border: none;
-    box-shadow: var(--card-shadow);
-    animation: fadeIn 0.8s ease-out;
-    overflow: hidden;
-}
-
-/* Form Elements */
-.form-control {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    border-radius: 10px;
-    padding: 12px;
-    border: 2px solid #eef2f7;
-    transition: all 0.3s ease;
-    background: rgba(255,255,255,0.9);
-}
-
-.form-control:focus {
-    box-shadow: 0 0 0 3px rgba(102,204,255,0.25);
-    border-color: #66CCFF;
-    transform: translateY(-2px);
-}
-
-/* Button Styles */
-.btn {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: var(--primary-gradient);
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102,204,255,0.4);
-}
-
-.btn-action {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Edit & Delete Buttons */
-.btn-edit {
-    background: linear-gradient(135deg, #FFB75E, #ED8F03);
-    color: white;
-}
-
-.btn-edit:hover {
-    background: linear-gradient(135deg, #ED8F03, #FFB75E);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(237, 143, 3, 0.3);
-    color: white;
-}
-
-.btn-delete {
-    background: linear-gradient(135deg, #FF6B6B, #FF4949);
-    color: white;
-}
-
-.btn-delete:hover {
-    background: linear-gradient(135deg, #FF4949, #FF6B6B);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 73, 73, 0.3);
-    color: white;
-}
-
-/* List Styles */
-.list-group-item {
-    font-family: 'Inter', sans-serif;
-    border: 1px solid rgba(0,0,0,0.1);
-    margin-bottom: 0.5rem;
-    border-radius: 10px !important;
-    transition: all 0.3s ease;
-}
-
-.list-group-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.list-title {
-    transition: all 0.3s ease;
-}
-
-/* Footer Styles */
-.footer {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    padding: 15px 0;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    z-index: 1000;
-}
-
-.waves {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 15px;
-    margin-bottom: -7px;
-    min-height: 15px;
-}
-
-.wave {
-    position: absolute;
-    top: -10px;
-    left: 0;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(90deg, #0099CC, #66CCFF);
-    opacity: 0.3;
-}
-
-#wave1 {
-    z-index: 1;
-    opacity: 0.5;
-    animation: moveWave1 3s linear infinite;
-}
-
-#wave2 {
-    z-index: 0;
-    opacity: 0.3;
-    animation: moveWave2 5s linear infinite;
-}
-
-.copyright {
-    margin: 0;
-    color: #333;
-    font-size: 0.9rem;
-    position: relative;
-    z-index: 2;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Responsive Styles */
-@media (max-width: 1200px) {
-    .container {
-        max-width: 95%;
+    /* Hero Slider Styling */
+    .hero-slider-container {
+        position: relative;
+        height: 280px;
+        overflow: hidden;
     }
-}
-
-@media (max-width: 992px) {
-    .taskdo-logo {
-        height: 60px;
+    .slider-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .navbar-text {
-        font-size: 1rem !important;
+    .slide-item {
+        min-width: 100%;
+        height: 100%;
+        position: relative;
     }
-
-    #currentTime {
-        font-size: 1rem;
+    .slide-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
-
-    .main-container {
-        padding: 1.5rem;
+    .slide-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(0, 85, 115, 0.4), rgba(0, 85, 115, 0.7));
+        z-index: 1;
     }
-}
-
-@media (max-width: 768px) {
-    .navbar {
-        padding: 0.4rem 0.8rem;
-    }
-
-    .navbar .container-fluid {
+    .slider-content {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0.5rem;
+        justify-content: center;
+        pointer-events: none;
     }
-
-    .profile-img {
-        width: 30px;
-        height: 30px;
+    .slider-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 20;
     }
-
-    .taskdo-logo {
-        height: 55px;
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
-
-    #currentTime {
-        font-size: 0.8rem;
+    .dot.active {
+        background: #ffffff;
+        transform: scale(1.2);
     }
-
-    .input-group {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 0.5rem;
+    .slider-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
     }
-
-    .btn-action {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.75rem;
+    .slider-arrow:hover {
+        background: rgba(255, 255, 255, 0.25);
     }
-
-    .footer {
-        padding: 12px 0;
-    }
-    
-    .copyright {
-        font-size: 0.8rem;
-    }
-    
-    .waves {
-        height: 10px;
-    }
-}
-
-@media (max-width: 576px) {
-    .navbar {
-        padding: 0.3rem 0.5rem;
-    }
-
-    .profile-img {
-        width: 28px;
-        height: 28px;
-    }
-
-    .taskdo-logo {
-        height: 30px;
-    }
-
-    .main-container {
-        padding-bottom: 60px;
-    }
-    
-    .footer {
-        padding: 10px 0;
-    }
-    
-    .copyright {
-        font-size: 0.75rem;
-    }
-
-    .btn-primary span {
-        display: none;
-    }
-
-    .btn-primary i {
-        margin: 0;
-    }
-}
-
-/* iOS Fix */
-@supports (-webkit-touch-callout: none) {
-    .input-group .form-control {
-        min-width: 0;
-        width: 100% !important;
-    }
-}
-
-/* Checklist styling */
-.form-check-input {
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    width: 20px;
-    height: 20px;
-}
-
-.form-check-input:checked {
-    background-color: #66CCFF;
-    border-color: #66CCFF;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-}
-
-.form-check-input:focus {
-    border-color: #66CCFF;
-    box-shadow: 0 0 0 0.25rem rgba(102, 204, 255, 0.25);
-}
-
-.form-check-input:hover {
-    border-color: #66CCFF;
-}
-
+    .slider-arrow.prev { left: 20px; }
+    .slider-arrow.next { right: 20px; }
 </style>
 </head>
-<body>
-    <!-- Decorative Background -->
-    <div class="decorative-bg">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-    </div>
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center justify-content-between w-100">
-            <!-- Profile Section -->
-            <div class="d-flex align-items-center">
-                <div class="profile-wrapper" style="cursor: pointer;" id="userProfile">
-                    <img src="<?= htmlspecialchars($photo) ?>?<?= time() ?>" 
-                         alt="Profile Picture" 
-                         class="rounded-circle profile-img me-2">
-                    <span class="navbar-text d-none d-md-inline">Welcome, <?= htmlspecialchars($username) ?></span>
-                </div>
+<body class="bg-surface min-h-screen font-body-md text-on-surface pt-20">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm shadow-primary/5 transition-all">
+    <div class="flex justify-between items-center px-md py-sm max-w-container-max mx-auto h-20">
+        <!-- Left: Profile -->
+        <div class="flex items-center gap-sm cursor-pointer" id="userProfile" data-bs-toggle="modal" data-bs-target="#profileModal">
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+                <img alt="Profile Picture" class="w-full h-full object-cover" src="<?= htmlspecialchars($photo) ?>?<?= time() ?>"/>
             </div>
-
-            <!-- Logo Section -->
-            <div class="logo-wrapper text-center">
-                <img src="FOTO/taskdo.png" alt="TaskDo Logo" class="taskdo-logo">
+            <div class="hidden md:block">
+                <span class="font-label-md text-on-surface-variant">Welcome,</span>
+                <span class="font-label-md text-primary block"><?= htmlspecialchars($username) ?></span>
             </div>
-
-            <!-- Clock Section -->
-            <div class="clock-wrapper">
-                <span id="currentTime" class="navbar-text"></span>
+        </div>
+        <!-- Center: Logo -->
+        <div class="flex flex-col items-center">
+            <img alt="TaskDo Logo" class="h-20 w-auto" src="FOTO/taskdo.png"/>
+        </div>
+        <!-- Right: Action & Clock -->
+        <div class="flex items-center gap-md">
+            <div class="hidden md:flex items-center gap-sm px-md py-xs bg-surface-container-low rounded-full">
+                <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+                <span class="font-label-md text-on-surface-variant" id="currentTime"></span>
             </div>
         </div>
     </div>
-</nav>
+</header>
 
-    <div class="container main-container">
-        <h1 class="text-center mb-4 text-white">MY TODO LIST</h1>
-
-       <!-- Form to add new to-do list -->
-<div class="todo-card mb-4">
-    <div class="card-body">
-        <form id="addListForm" class="mb-4">
-            <div class="input-group">
-                <input type="text" 
-                       class="form-control" 
-                       name="title" 
-                       id="listTitle" 
-                       placeholder="What needs to be done?" 
-                       required
-                       autocomplete="off">
-                <button class="btn btn-primary" type="submit">
-                    <i class="fas fa-plus"></i>
-                    <span class="btn-text">Add Task</span>
-                </button>
+<!-- Main Content -->
+<main class="pt-8 pb-8 px-md max-w-container-max mx-auto">
+    <!-- Dashboard Header Slider -->
+    <div class="hero-slider-container rounded-3xl mb-xl shadow-ambient">
+        <div class="slider-track" id="sliderTrack">
+            <div class="slide-item">
+                <img src="FOTO/motivation1.jpeg" alt="Slide 1">
+                <div class="slide-overlay"></div>
             </div>
-        </form>
-    </div>
-</div>
-
-
-<!-- Search Box -->
-<div class="todo-card mb-4">
-    <div class="card-body">
-        <div class="search-container">
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="fas fa-search search-icon"></i>
-                </span>
-                <input type="text" 
-                       class="form-control" 
-                       id="searchTask" 
-                       placeholder="Search tasks..."
-                       autocomplete="off">
-                <button class="btn btn-outline-secondary" 
-                        type="button" 
-                        id="clearSearch" 
-                        style="display: none;">
-                    <i class="fas fa-times"></i>
-                </button>
+            <div class="slide-item">
+                <img src="FOTO/motivation2.jpeg" alt="Slide 2">
+                <div class="slide-overlay"></div>
+            </div>
+            <div class="slide-item">
+                <img src="FOTO/workspace.jpeg" alt="Slide 3">
+                <div class="slide-overlay"></div>
             </div>
         </div>
-    </div>
-</div>
+        
+        <div class="slider-content">
+            <h1 class="font-display-lg text-on-primary mb-xs">MY TODO LIST</h1>
+            <p class="font-body-md text-on-primary/80">Stay focused, maintain clarity, and achieve more.</p>
+        </div>
 
-<!-- Todo List Card -->
-<div class="todo-card">
-    <div class="card-body">
-    <ul class="list-group" id="todoList">
-    <?php while ($row = $result->fetch_assoc()): ?>
-        <li class="list-group-item d-flex justify-content-between align-items-center" id="list-<?= $row['id'] ?>">
-            <div class="d-flex align-items-center">
-                <input type="checkbox" 
-                       class="form-check-input me-3" 
-                       data-id="<?= $row['id'] ?>" 
-                       <?= $row['completed'] ? 'checked' : '' ?>>
-                <span class="list-title" 
-                      id="title-<?= $row['id'] ?>" 
-                      style="<?= $row['completed'] ? 'text-decoration: line-through;' : '' ?>">
-                    <?= htmlspecialchars($row['title']) ?>
-                </span>
-            </div>
-            <div>
-                <button class="btn-action btn-edit me-2" 
-                        data-id="<?= $row['id'] ?>" 
-                        data-title="<?= htmlspecialchars($row['title']) ?>" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#editModal">
-                    <i class="fas fa-edit"></i>
-                    <span>Edit</span>
-                </button>
-                <button class="btn-action btn-delete" 
-                        data-id="<?= $row['id'] ?>" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#deleteModal">
-                    <i class="fas fa-trash"></i>
-                    <span>Delete</span>
-                </button>
-            </div>
-        </li>
-    <?php endwhile; ?>
-</ul>
-    </div>
-</div>
+        <button class="slider-arrow prev" onclick="moveSlide(-1)">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button class="slider-arrow next" onclick="moveSlide(1)">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
 
-    <!-- Modal for editing to-do list -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editModalLabel">
-                    Edit Task: <span id="currentTaskTitle"></span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm">
-                    <div class="mb-3">
-                        <label for="editTitle" class="form-label">Task Title</label>
-                        <input type="text" class="form-control" id="editTitle" name="editTitle" required>
-                    </div>
-                    <input type="hidden" id="editListId" name="editListId">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Save Changes
+        <div class="slider-dots" id="sliderDots">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+        <!-- Left Column: Search & Add -->
+        <div class="lg:col-span-4 space-y-gutter">
+            <!-- Search Card -->
+            <section class="bg-surface-container-lowest rounded-3xl p-md shadow-ambient border border-white">
+                <div class="relative flex items-center search-container">
+                    <span class="material-symbols-outlined absolute left-4 text-outline" data-icon="search">search</span>
+                    <input class="w-full pl-12 pr-12 py-3 bg-surface-container-low border-none rounded-2xl focus:ring-2 focus:ring-primary/20 font-body-sm transition-all" placeholder="Find a task..." type="text" id="searchTask" autocomplete="off"/>
+                    <button class="absolute right-4 text-outline hover:text-error transition-colors" id="clearSearch" style="display: none;">
+                        <span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
                     </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+                </div>
+            </section>
 
-    <!-- Modal for deleting to-do list -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this TO DO LIST?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal for profile -->
-    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img src="<?= htmlspecialchars($photo) ?>" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
-                    <h1><?= htmlspecialchars($username) ?></h1>
-                    <a href="edit_profile.php" class="btn btn-primary mt-3">Edit Profile</a>
-                    <a href="logout.php" class="btn btn-danger mt-3">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<!-- Modal for password confirmation before editing profile -->
-<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="passwordModalLabel">Confirm Your Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="passwordForm">
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Enter Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+            <!-- Add Task Card -->
+            <section class="bg-surface-container-lowest rounded-3xl p-md shadow-ambient border border-white">
+                <h3 class="font-headline-sm text-on-surface mb-md">New Task</h3>
+                <form id="addListForm">
+                    <div class="space-y-sm">
+                        <input class="w-full px-md py-3 bg-white border border-outline-variant rounded-xl focus:border-primary focus:ring-0 font-body-sm transition-all outline-none" placeholder="What needs to be done?" type="text" id="listTitle" name="title" required autocomplete="off"/>
+                        <button type="submit" class="w-full bg-primary-gradient text-on-primary py-3 rounded-xl font-label-md flex items-center justify-center gap-xs hover:shadow-lg hover:shadow-primary/20 active:scale-95 transition-all border-0">
+                            <span class="material-symbols-outlined" data-icon="add">add</span>
+                            Add Task
+                        </button>
                     </div>
-                    <button type="submit" class="btn btn-primary">Confirm</button>
                 </form>
-                <p id="passwordError" class="text-danger mt-2" style="display: none;">Incorrect password. Please try again.</p>
+            </section>
+        </div>
+
+        <!-- Right Column: Task List -->
+        <div class="lg:col-span-8">
+            <section class="bg-surface-container-lowest rounded-3xl shadow-ambient border border-white overflow-hidden">
+                <div class="p-md border-b border-surface-variant flex justify-between items-center bg-surface-container-low/30">
+                    <h2 class="font-headline-sm text-primary">Pending Tasks</h2>
+                </div>
+                
+                <div class="divide-y divide-surface-variant" id="todoList">
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                    <div class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group list-group-item border-0 rounded-none mb-0" id="list-<?= $row['id'] ?>">
+                        <div class="flex items-center gap-md">
+                            <input type="checkbox" class="form-check-input me-3 mt-0" data-id="<?= $row['id'] ?>" <?= $row['completed'] ? 'checked' : '' ?>>
+                            <span class="font-body-md text-on-surface list-title <?= $row['completed'] ? 'task-done' : '' ?>" id="title-<?= $row['id'] ?>">
+                                <?= htmlspecialchars($row['title']) ?>
+                            </span>
+                        </div>
+                        <div class="flex gap-sm opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="p-2 text-tertiary hover:bg-tertiary-fixed rounded-lg transition-colors btn-action btn-edit border-0 bg-transparent" data-id="<?= $row['id'] ?>" data-title="<?= htmlspecialchars($row['title']) ?>" data-bs-toggle="modal" data-bs-target="#editModal">
+                                <span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+                            </button>
+                            <button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors btn-action btn-delete border-0 bg-transparent" data-id="<?= $row['id'] ?>" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface-container-lowest rounded-[1.5rem] shadow-2xl border-0 overflow-hidden" style="opacity:1!important;">
+            <!-- Header -->
+            <div class="p-md flex items-center justify-between" style="background: linear-gradient(135deg,#007da8 0%,#006386 100%);">
+                <h4 class="font-headline-sm text-on-primary m-0">Edit Task</h4>
+                <button type="button" class="material-symbols-outlined text-on-primary border-0 bg-transparent p-0 leading-none" data-bs-dismiss="modal" style="font-size:22px;">close</button>
+            </div>
+            <!-- Body -->
+            <div class="modal-body p-xl">
+                <form id="editForm" class="space-y-lg">
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-on-surface-variant" for="editTitle">Task Title</label>
+                        <input class="w-full p-md rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-on-surface" type="text" id="editTitle" name="editTitle" required/>
+                        <input type="hidden" id="editListId" name="editListId">
+                    </div>
+                    <div class="flex gap-md pt-sm">
+                        <button type="button" class="flex-1 py-md px-lg border border-outline-variant text-on-surface-variant rounded-full font-label-md hover:bg-surface-container-low transition-all bg-transparent" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="flex-1 py-md px-lg text-on-primary rounded-full font-label-md hover:opacity-90 transition-all border-0" style="background: linear-gradient(135deg,#007da8 0%,#006386 100%);">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Footer Design dengan Waves -->
-<footer class="footer">
-    <div class="waves">
-        <div class="wave" id="wave1"></div>
-        <div class="wave" id="wave2"></div>
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content bg-surface-container-lowest rounded-[1.5rem] shadow-2xl border-0" style="opacity:1!important;">
+            <div class="modal-body p-xl text-center">
+                <!-- Icon -->
+                <div class="mx-auto w-16 h-16 bg-error-container rounded-full flex items-center justify-center text-error mb-md">
+                    <span class="material-symbols-outlined" style="font-size:30px;">delete_forever</span>
+                </div>
+                <!-- Text -->
+                <h4 class="font-headline-sm text-on-surface mb-sm">Delete Task?</h4>
+                <p class="text-on-surface-variant font-body-md mb-xl">This action cannot be undone. This task will be permanently removed.</p>
+                <!-- Buttons -->
+                <div class="flex gap-md">
+                    <button type="button"
+                        class="flex-1 font-label-md rounded-full transition-all bg-transparent"
+                        style="padding: 12px 24px; border: 1.5px solid #bdc8d0; color: #3e484f;"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="button"
+                        class="flex-1 font-label-md rounded-full transition-all border-0"
+                        style="padding: 12px 24px; background:#ba1a1a; color:#ffffff;"
+                        id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="container text-center">
-        <p class="copyright">
-            TaskDo &copy; <?= date('Y') ?> | All Rights Reserved
-        </p>
+</div>
+
+
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface-container-lowest rounded-[1.5rem] p-xl shadow-2xl border-0 text-center" style="opacity:1!important;">
+            <div class="modal-body p-0">
+                <button type="button" class="material-symbols-outlined text-on-surface-variant border-0 bg-transparent p-0 absolute top-4 right-4" data-bs-dismiss="modal" style="font-size:22px;">close</button>
+                <div class="relative w-32 h-32 mx-auto mb-lg">
+                    <img src="<?= htmlspecialchars($photo) ?>?<?= time() ?>" alt="Profile Picture" class="w-full h-full rounded-full object-cover border-4 border-surface-container shadow-lg">
+                </div>
+                <h4 class="font-headline-md text-on-surface mb-xs"><?= htmlspecialchars($username) ?></h4>
+                <p class="text-on-surface-variant font-body-md mb-xl"><?= htmlspecialchars($email) ?></p>
+                <div class="space-y-md">
+                    <a href="edit_profile.php" class="w-full flex items-center justify-center gap-sm py-md px-lg text-on-primary rounded-full font-label-md hover:opacity-90 transition-all no-underline border-0" style="background: linear-gradient(135deg,#007da8 0%,#006386 100%);">
+                        <span class="material-symbols-outlined text-base">person_edit</span>
+                        Edit Profile
+                    </a>
+                    <a href="logout.php" class="w-full flex items-center justify-center gap-sm py-md px-lg text-error hover:bg-error-container/20 rounded-full font-label-md transition-all no-underline">
+                        <span class="material-symbols-outlined text-base">logout</span>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface-container-lowest rounded-[1.5rem] p-xl shadow-2xl border-0" style="opacity:1!important;">
+            <div class="modal-body p-0">
+                <div class="mb-xl">
+                    <h4 class="font-headline-sm text-on-surface mb-sm">Confirm Password</h4>
+                    <p class="text-on-surface-variant font-body-sm">For your security, please re-enter your password to proceed with account changes.</p>
+                </div>
+                <form id="passwordForm" class="space-y-lg">
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-on-surface-variant absolute left-md top-1/2 -translate-y-1/2" style="opacity:0.5;">lock</span>
+                        <input class="w-full pl-xl pr-md py-md rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md" placeholder="Enter your password" type="password" id="password" name="password" required/>
+                    </div>
+                    <p id="passwordError" class="text-error text-sm font-label-md" style="display:none;">Incorrect password. Please try again.</p>
+                    <div class="flex gap-md">
+                        <button type="button" class="flex-1 py-md px-lg border border-outline-variant text-on-surface-variant rounded-full font-label-md hover:bg-surface-container-low transition-all bg-transparent" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="flex-1 py-md px-lg text-on-primary rounded-full font-label-md hover:opacity-90 transition-all border-0" style="background: linear-gradient(135deg,#007da8 0%,#006386 100%);">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Footer -->
+<footer class="w-full z-40 mt-auto flex flex-col items-center gap-sm py-md px-gutter bg-surface-container-low/80 backdrop-blur-sm">
+    <p class="font-body-sm text-secondary">
+        TaskDo &copy; 2024 | All Rights Reserved
+    </p>
 </footer>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // =============================================
+    // GLOBAL MODAL BACKDROP CLEANUP
+    // Ensures backdrop is ALWAYS removed when any modal hides
+    // =============================================
+    $(document).on('hidden.bs.modal', '.modal', function() {
+        // Remove stuck backdrop
+        $('.modal-backdrop').remove();
+        // Re-enable scrolling
+        $('body').removeClass('modal-open');
+        $('body').css('overflow', '');
+        $('body').css('padding-right', '');
+    });
+
     // Handle when the "Edit Profile" button is clicked
     $('a[href="edit_profile.php"]').click(function(e) {
         e.preventDefault(); // Prevent direct link
@@ -861,12 +632,6 @@ $(document).on('click', '.btn-edit', function() {
     $('#editTitle').val(currentTitle);
     $('#editListId').val(listId);
     $('#currentTaskTitle').text(currentTitle); // Menambahkan judul task yang sedang diedit
-    
-    // Tambahkan animasi fade in untuk modal content
-    $('.modal-content').css('opacity', 0);
-    $('#editModal').on('shown.bs.modal', function() {
-        $('.modal-content').animate({opacity: 1}, 300);
-    });
 });
 
 // Style tambahan untuk modal
@@ -1126,24 +891,20 @@ $('#addListForm').submit(function(e) {
                 const newList = JSON.parse(response);
                 if (newList.success) {
                     const newListItem = `
-                        <li class="list-group-item d-flex justify-content-between align-items-center" id="list-${newList.id}">
-                            <div class="d-flex align-items-center">
-                                <input type="checkbox" class="form-check-input me-3" data-id="${newList.id}">
-                                <span class="list-title" id="title-${newList.id}">${newList.title}</span>
-                            </div>
-                            <div>
-                                <button class="btn-action btn-edit me-2" data-id="${newList.id}" 
-                                    data-title="${newList.title}" data-bs-toggle="modal" data-bs-target="#editModal">
-                                    <i class="fas fa-edit"></i>
-                                    <span>Edit</span>
-                                </button>
-                                <button class="btn-action btn-delete" data-id="${newList.id}" 
-                                    data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i class="fas fa-trash"></i>
-                                    <span>Delete</span>
-                                </button>
-                            </div>
-                        </li>
+                    <div class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group list-group-item border-0 rounded-none mb-0" id="list-${newList.id}">
+                        <div class="flex items-center gap-md">
+                            <input type="checkbox" class="form-check-input me-3 mt-0" data-id="${newList.id}">
+                            <span class="font-body-md text-on-surface list-title" id="title-${newList.id}">${newList.title}</span>
+                        </div>
+                        <div class="flex gap-sm opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="p-2 text-tertiary hover:bg-tertiary-fixed rounded-lg transition-colors btn-action btn-edit border-0 bg-transparent" data-id="${newList.id}" data-title="${newList.title}" data-bs-toggle="modal" data-bs-target="#editModal">
+                                <span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+                            </button>
+                            <button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors btn-action btn-delete border-0 bg-transparent" data-id="${newList.id}" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+                            </button>
+                        </div>
+                    </div>
                     `;
 
                     // Cari item terakhir yang di-checklist
@@ -1324,36 +1085,7 @@ $(document).on('change', '.form-check-input', function() {
     });
 });
 
-// Update bagian add new task (pada bagian success callback)
-if (newList.success) {
-    const newListItem = `
-        <li class="list-group-item d-flex justify-content-between align-items-center" id="list-${newList.id}">
-            <div class="d-flex align-items-center">
-                <input type="checkbox" class="form-check-input me-3" data-id="${newList.id}">
-                <span class="list-title" id="title-${newList.id}">${newList.title}</span>
-            </div>
-            <div>
-                <button class="btn-action btn-edit me-2" data-id="${newList.id}" 
-                    data-title="${newList.title}" data-bs-toggle="modal" data-bs-target="#editModal">
-                    <i class="fas fa-edit"></i>
-                    <span>Edit</span>
-                </button>
-                <button class="btn-action btn-delete" data-id="${newList.id}" 
-                    data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="fas fa-trash"></i>
-                    <span>Delete</span>
-                </button>
-            </div>
-        </li>`;
 
-    $(newListItem)
-        .prependTo('#todoList')
-        .hide()
-        .slideDown(300);
-    
-    $('#listTitle').val('');
-    showNotification('Task added successfully!', 'success');
-}
 
 // Tambahkan CSS untuk animasi yang lebih smooth
 </script>
@@ -1524,7 +1256,37 @@ if (!document.getElementById('searchStyles')) {
     styleSheet.textContent = searchStyles;
     document.head.appendChild(styleSheet);
 }
+
+// Hero Slider Logic
+let slideIndex = 0;
+const track = document.getElementById('sliderTrack');
+const dots = document.querySelectorAll('.dot');
+const totalSlides = 3;
+
+function updateSlider() {
+    if (!track) return;
+    track.style.transform = `translateX(-${slideIndex * 100}%)`;
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === slideIndex);
+    });
+}
+
+window.moveSlide = function(n) {
+    slideIndex = (slideIndex + n + totalSlides) % totalSlides;
+    updateSlider();
+}
+
+window.goToSlide = function(n) {
+    slideIndex = n;
+    updateSlider();
+}
+
+// Auto slide
+setInterval(() => {
+    moveSlide(1);
+}, 3000);
 </script>
 
 </body>
 </html>
+<style> .modal.show { display: block !important; opacity: 1 !important; } .modal.show .modal-content { opacity: 1 !important; transform: none !important; visibility: visible !important; display: block !important; z-index: 1060 !important; } .modal-backdrop { z-index: 1040 !important; } .modal { z-index: 1050 !important; } </style>
